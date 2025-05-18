@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Download Link Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 2em;
+      text-align: center;
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007ee5;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #output {
+      margin-top: 1em;
+      color: green;
+      font-weight: bold;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Dropbox, Google Drive & Docs Link Converter</h2>
+
+  <input type="text" id="linkInput" placeholder="Paste your link here">
+  <br>
+  <button onclick="convertLink()">Convert & Copy</button>
+
+  <p id="output"></p>
+
+  <script>
+    function convertLink() {
+      const input = document.getElementById("linkInput").value.trim();
+      const output = document.getElementById("output");
+
+      try {
+        let finalURL = "";
+
+        // Dropbox
+        if (input.includes("dropbox.com")) {
+          const url = new URL(input);
+          url.searchParams.set("dl", "1");
+          finalURL = url.toString();
+        }
+
+        // Google Drive File
+        else if (input.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)) {
+          const fileId = input.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)[1];
+          finalURL = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        }
+
+        // Google Docs (Docs, Sheets, Slides)
+        else if (input.match(/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9_-]+)/)) {
+          const docMatch = input.match(/docs\.google\.com\/(document|spreadsheets|presentation)\/d\/([a-zA-Z0-9_-]+)/);
+          const type = docMatch[1]; // document / spreadsheets / presentation
+          const fileId = docMatch[2];
+
+          // Force copy link
+          finalURL = `https://docs.google.com/${type}/d/${fileId}/copy`;
+        }
+
+        else {
+          output.textContent = "❌ Unsupported link. Use Dropbox or Google links.";
+          output.style.color = "red";
+          return;
+        }
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(finalURL).then(() => {
+          output.textContent = "✅ Copied to clipboard:\n" + finalURL;
+          output.style.color = "green";
+        }).catch(() => {
+          output.textContent = "❌ Failed to copy to clipboard.";
+          output.style.color = "red";
+        });
+
+      } catch (err) {
+        output.textContent = "❌ Error: " + err.message;
+        output.style.color = "red";
+      }
+    }
+  </script>
+
+</body>
+</html>
